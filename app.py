@@ -53,3 +53,22 @@ def add_task(request: Request, title: str = Form(...), db: Session = Depends(get
 
     url = app.url_path_for('home')
     return RedirectResponse(url=url, status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.put('/update/{todo_id}')
+def update_task(todo_id: int, db: Session = Depends(get_db)):
+    """
+    Обновление существующей TODO-задачи.
+
+    :param todo_id: идентификатор обновляемой TODO-задачи (типа int)
+    :param db: экземпляр сессии базы данных (типа Session)
+    :return: перенаправление на главную страницу
+    """
+    task = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
+    if task is None:
+        raise HTTPException(status_code=404, detail='Not found')
+    task.complete = not task.complete
+    db.commit()
+
+    url = app.url_path_for('home')
+    return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
