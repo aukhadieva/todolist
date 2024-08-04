@@ -72,3 +72,22 @@ def update_task(todo_id: int, db: Session = Depends(get_db)):
 
     url = app.url_path_for('home')
     return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
+
+
+@app.delete('/delete/{todo_id}')
+def delete_task(todo_id: int, db: Session = Depends(get_db)):
+    """
+    Удаление существующей TODO-задачи.
+
+    :param todo_id: идентификатор удаляемой TODO-задачи (типа int)
+    :param db: экземпляр сессии базы данных (типа Session)
+    :return: перенаправление на главную страницу
+    """
+    task = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
+    if task is None:
+        raise HTTPException(status_code=404, detail='Not found')
+    db.delete(task)
+    db.commit()
+
+    url = app.url_path_for('home')
+    return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
