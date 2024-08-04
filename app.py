@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, Form, status, HTTPException
 
 from sqlalchemy.orm import Session
+from starlette.responses import RedirectResponse
 from starlette.templating import Jinja2Templates
 
 import models
@@ -31,6 +32,24 @@ def home(request: Request, db: Session = Depends(get_db)):
     :param db: экземпляр сессии базы данных (типа Session)
     :return: страница с HTML-шаблоном и данными TODO-задач
     """
-    todos = db.query(models.Todo).all()
+    tasks = db.query(models.Todo).all()
     return templates.TemplateResponse('base.html',
-                                      {'request': request, 'todo_list': todos})
+                                      {'request': request, 'todo_list': tasks})
+
+
+@app.post('/add')
+def add_task(request: Request, title: str = Form(...), db: Session = Depends(get_db)):
+    """
+    Добавление новой TODO-задачи.
+
+    :param request: экземпляр запроса (типа Request)
+    :param title: заголовок новой TODO-задачи (типа str)
+    :param db: экземпляр сессии базы данных (типа Session)
+    :return: перенаправление на главную страницу
+    """
+    task = models.Todo(title=title)
+    db.add(task)
+    db.commit()
+
+    url = app.url_path_for('home')
+    return RedirectResponse(url=url, status_code=status.HTTP_303_SEE_OTHER)
