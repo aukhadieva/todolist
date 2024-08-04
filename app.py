@@ -55,7 +55,7 @@ def add_task(request: Request, title: str = Form(...), db: Session = Depends(get
     return RedirectResponse(url=url, status_code=status.HTTP_303_SEE_OTHER)
 
 
-@app.put('/update/{todo_id}')
+@app.get('/update/{todo_id}')
 def update_task(todo_id: int, db: Session = Depends(get_db)):
     """
     Обновление существующей TODO-задачи.
@@ -74,7 +74,7 @@ def update_task(todo_id: int, db: Session = Depends(get_db)):
     return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
 
 
-@app.delete('/delete/{todo_id}')
+@app.get('/delete/{todo_id}')
 def delete_task(todo_id: int, db: Session = Depends(get_db)):
     """
     Удаление существующей TODO-задачи.
